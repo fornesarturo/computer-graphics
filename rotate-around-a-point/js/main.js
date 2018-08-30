@@ -66,7 +66,7 @@ function renderScene()
 	// Traslation
 	modelMatrix = mat4.create();
 	var tx = 0. - positions[2], ty = 0. - positions[3];
-	var theta = 90. * Math.PI / 180.;
+	var theta = 45. * Math.PI / 180.;
 	// First translate so that the point is at (0, 0)
 	mat4.translate(modelMatrix, modelMatrix, [tx, ty, 0.]);
 	// Rotate the desired angle around the Z axis.
