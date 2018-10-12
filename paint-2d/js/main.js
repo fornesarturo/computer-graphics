@@ -21,7 +21,7 @@ class Triangle extends GlComponent {
 			data: {}
 		})
 		this.currentShader = "singleColorShader"
-		this.color = color
+		this.color = color.slice()
 		this.colors = colors
 		this.points = points
 		this.pointSize = pointSize
@@ -31,7 +31,7 @@ class Triangle extends GlComponent {
 	}
 
 	setColor (color) {
-		this.color = color
+		this.color = color.slice()
 	}
 
 	setColors (colors) {
@@ -161,7 +161,7 @@ class Square extends GlComponent {
 		this.height = height
 		this.start = start
 		this.currentShader = "singleColorShader"
-		this.color = color
+		this.color = color.slice()
 		this.colors = colors
 		this.pointSize = pointSize
 		this.modelMatrix = mat4.create()
@@ -170,7 +170,7 @@ class Square extends GlComponent {
 	}
 
 	setColor(color) {
-		this.color = color
+		this.color = color.slice()
 	}
 
 	setColors(colors) {
@@ -352,7 +352,7 @@ class Trapezoid extends GlComponent {
 		})
 		this.currentShader = "singleColorShader"
 		//this.points = points
-		this.color = color
+		this.color = color.slice()
 		this.colors = colors
 		this.pointSize = pointSize
 		this.modelMatrix = mat4.create()
@@ -361,7 +361,7 @@ class Trapezoid extends GlComponent {
 	}
 
 	setColor(color) {
-		this.color = color
+		this.color = color.slice()
 	}
 
 	setColors(colors) {
@@ -554,7 +554,7 @@ class Circle extends GlComponent {
 		})
 		this.currentShader = "singleColorShader"
 		this.mode = "single-color"
-		this.color = color
+		this.color = color.slice()
 		this.colors = colors
 		this.radius = radius
 		this.pointSize = pointSize
@@ -564,6 +564,15 @@ class Circle extends GlComponent {
 		this.n = this.generatePoints()
 		this.setRender(this.draw)
 		this.setUpdate(this.animate)
+	}
+
+	setColor (color) {
+		this.color = color.slice()
+	}
+
+	setColors (colors) {
+		this.colors = colors
+		this.n = this.generatePoints()
 	}
 
 	generatePoints () {
@@ -678,7 +687,7 @@ class Point extends GlComponent {
 	}
 
 	setColor(color) {
-		this.color = color
+		this.color = color.slice()
 	}
 
 	getCentroid() {
@@ -770,7 +779,7 @@ class Segment extends GlComponent {
 	}
 
 	setColor(color) {
-		this.color = color
+		this.color = color.slice()
 	}
 
 	setColors(colors) {
