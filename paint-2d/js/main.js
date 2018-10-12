@@ -30,6 +30,15 @@ class Triangle extends GlComponent {
 		this.setUpdate(this.animate)
 	}
 
+	setColor (color) {
+		this.color = color
+	}
+
+	setColors (colors) {
+		this.colors = colors
+		this.buffers["vboColor"].loadBufferData(colors)
+	}
+
 	getCentroid () {
 		var x = (this.points[0] + this.points[2] + this.points[4]) / 3.
 		var y = (this.points[1] + this.points[3] + this.points[5]) / 3.
@@ -158,6 +167,24 @@ class Square extends GlComponent {
 		this.modelMatrix = mat4.create()
 		this.setRender(this.draw)
 		this.setUpdate(this.animate)
+	}
+
+	setColor(color) {
+		this.color = color
+	}
+
+	setColors(colors) {
+		this.colors = colors
+		this.buffers["vboColor1"].loadBufferData([
+			colors[0], colors[0 + 1], colors[0 + 2], colors[0 + 3],
+			colors[4], colors[4 + 1], colors[4 + 2], colors[4 + 3],
+			colors[8], colors[8 + 1], colors[8 + 2], colors[8 + 3]
+		])
+		this.buffers["vboColor2"].loadBufferData([
+			colors[8], colors[8 + 1], colors[8 + 2], colors[8 + 3],
+			colors[12], colors[12 + 1], colors[12 + 2], colors[12 + 3],
+			colors[0], colors[0 + 1], colors[0 + 2], colors[0 + 3]
+		])
 	}
 
 	getCentroid() {
@@ -311,7 +338,7 @@ class Trapezoid extends GlComponent {
 						(colors[8] + colors[12]) / 2, (colors[8 + 1] + colors[12 + 1]) / 2, (colors[8 + 2] + colors[12 + 2]) / 2, (colors[8 + 3] + colors[12 + 3]) / 2
 					]
 				}),
-				vboColor2: new GlBuffer({
+				vboColor3: new GlBuffer({
 					gl: gl,
 					type: Float32Array,
 					initialData: [
@@ -331,6 +358,29 @@ class Trapezoid extends GlComponent {
 		this.modelMatrix = mat4.create()
 		this.setRender(this.draw)
 		this.setUpdate(this.animate)
+	}
+
+	setColor(color) {
+		this.color = color
+	}
+
+	setColors(colors) {
+		this.colors = colors
+		this.buffers["vboColor1"].loadBufferData([
+			colors[0], colors[0 + 1], colors[0 + 2], colors[0 + 3],
+			(colors[8] + colors[12]) / 2, (colors[8 + 1] + colors[12 + 1]) / 2, (colors[8 + 2] + colors[12 + 2]) / 2, (colors[8 + 3] + colors[12 + 3]) / 2,
+			colors[12], colors[12 + 1], colors[12 + 2], colors[12 + 3]
+		])
+		this.buffers["vboColor2"].loadBufferData([
+			colors[0], colors[0 + 1], colors[0 + 2], colors[0 + 3],
+			colors[4], colors[4 + 1], colors[4 + 2], colors[4 + 3],
+			(colors[8] + colors[12]) / 2, (colors[8 + 1] + colors[12 + 1]) / 2, (colors[8 + 2] + colors[12 + 2]) / 2, (colors[8 + 3] + colors[12 + 3]) / 2
+		])
+		this.buffers["vboColor3"].loadBufferData([
+			colors[4], colors[4 + 1], colors[4 + 2], colors[4 + 3],
+			colors[8], colors[8 + 1], colors[8 + 2], colors[8 + 3],
+			(colors[8] + colors[12]) / 2, (colors[8 + 1] + colors[12 + 1]) / 2, (colors[8 + 2] + colors[12 + 2]) / 2, (colors[8 + 3] + colors[12 + 3]) / 2
+		])
 	}
 
 	getCentroid() {
@@ -383,7 +433,7 @@ class Trapezoid extends GlComponent {
 		for (var i = 1; i <= 3; i++) {
 			// First
 			this.useProgram(this.currentShader)
-			this.setupAttribute("aPosition", "vboPosition" + i, 2, this.gl.FLOAT, false, 0, 0)
+			this.setupAttribute("aPosition", `vboPosition${i}`, 2, this.gl.FLOAT, false, 0, 0)
 
 			this.gl.uniformMatrix4fv(this.getUniform("uModelViewProjMatrix"), false, this.modelMatrix)
 
@@ -392,7 +442,7 @@ class Trapezoid extends GlComponent {
 			else if (this.currentShader == "singleColorShader") {
 				this.gl.uniform4fv(this.getUniform("uColor"), this.color)
 			} else if (this.currentShader == "perVertexColorShader") {
-				this.setupAttribute("aColor", "vboColor" + i, 4, this.gl.FLOAT, false, 0, 0)
+				this.setupAttribute("aColor", `vboColor${i}`, 4, this.gl.FLOAT, false, 0, 0)
 			}
 
 			var primitive = this.gl.TRIANGLES;
@@ -627,6 +677,10 @@ class Point extends GlComponent {
 		this.setUpdate(this.animate)
 	}
 
+	setColor(color) {
+		this.color = color
+	}
+
 	getCentroid() {
 		return this.point
 	}
@@ -715,6 +769,15 @@ class Segment extends GlComponent {
 		this.setUpdate(this.animate)
 	}
 
+	setColor(color) {
+		this.color = color
+	}
+
+	setColors(colors) {
+		this.colors = colors
+		this.buffers["vboColor"].loadBufferData(colors)
+	}
+
 	getCentroid() {
 		var x = (this.points[0] + this.points[2]) / 2
 		var y = (this.points[1] + this.points[3]) / 2
@@ -784,16 +847,11 @@ class Segment extends GlComponent {
 	}
 }
 
-function createComponents(gl) {
-	var shaderA = new GlShader({
-		gl: gl,
-		vertexShader: document.getElementById("shader-vs").text,
-		fragmentShader: document.getElementById("shader-fs").text,
-		attributes: ["aPosition"],
-		uniforms: []
-	})
+var pointShader, singleColorShader, perVertexColorShader
 
-	var pointShader = new GlShader({
+function createComponents(gl) {
+
+	pointShader = new GlShader({
 		gl: gl,
 		vertexShader: document.getElementById("point-shader-vs").text,
 		fragmentShader: document.getElementById("point-shader-fs").text,
@@ -801,7 +859,7 @@ function createComponents(gl) {
 		uniforms: ["uPointSize", "uColor", "uModelViewProjMatrix"]
 	})
 
-	var singleColorShader = new GlShader({
+	singleColorShader = new GlShader({
 		gl: gl,
 		vertexShader: document.getElementById("single-color-shader-vs").text,
 		fragmentShader: document.getElementById("single-color-shader-fs").text,
@@ -809,7 +867,7 @@ function createComponents(gl) {
 		uniforms: ["uColor", "uModelViewProjMatrix"]
 	})
 
-	var perVertexColorShader = new GlShader({
+	perVertexColorShader = new GlShader({
 		gl: gl,
 		vertexShader: document.getElementById("per-vertex-color-shader-vs").text,
 		fragmentShader: document.getElementById("per-vertex-color-shader-fs").text,
@@ -819,165 +877,167 @@ function createComponents(gl) {
 
 	var components = []
 	// Create Triangle object
-	var triangle = new Triangle({
-		gl: gl,
-		shaders: { 
-			"shaderA": shaderA, 
-			"pointShader": pointShader, 
-			"singleColorShader": singleColorShader, 
-			"perVertexColorShader": perVertexColorShader 
-		},
-		points: [
-			0., 0.5,
-			-0.5, -0.5,
-			0.5, -0.5
-		],
-		pointSize: 10.,
-		color: [1., 0., 1., 1.],
-		colors: [
-			1., 0., 0., 1.,
-			0., 1., 0., 1.,
-			0., 0., 1., 1.
-		]
-	})
-	var square = new Square({
-		gl: gl,
-		shaders: {
-			"shaderA": shaderA,
-			"pointShader": pointShader,
-			"singleColorShader": singleColorShader,
-			"perVertexColorShader": perVertexColorShader
-		},
-		start: [-0.5, 0.5],
-		width: 1.,
-		height: 1.,
-		pointSize: 10.,
-		color: [1., 1., 0., 1.],
-		colors: [
-			1, 0, 0, 1,
-			1, 1, 0, 1,
-			1, 1, 1, 0,
-			0, 1, 1, 1
-		]
-	})
-
-	var trapezoid = new Trapezoid({
-		gl: gl,
-		shaders: {
-			"shaderA": shaderA,
-			"pointShader": pointShader,
-			"singleColorShader": singleColorShader,
-			"perVertexColorShader": perVertexColorShader
-		},
-		width: 1.,
-		height: 1.,
-		pointSize: 10.,
-		color: [1., 0.5, 0., 1.],
-		colors: [
-			1, 0, 0, 1,
-			1, 1, 0, 1,
-			1, 1, 1, 0,
-			0, 1, 1, 1
-		]
-	})
-
-	var circle = new Circle({
-		gl: gl,
-		shaders: {
-			"shaderA": shaderA,
-			"pointShader": pointShader,
-			"singleColorShader": singleColorShader,
-			"perVertexColorShader": perVertexColorShader
-		},
-		radius: 0.5,
-		pointSize: 10.,
-		color: [0.7, .9, 1., 1.],
-		colors: [
-			1., 0., 0., 1.,
-			0., 1., 0., 1.
-		]
-	})
-
-	var segment = new Segment({ 
-		gl, 
-		shaders: {
-			"shaderA": shaderA,
-			"pointShader": pointShader,
-			"singleColorShader": singleColorShader,
-			"perVertexColorShader": perVertexColorShader
-		},
-		points: [
-			0.5, 0.7,
-			0.7, 0.7
-		], 
-		pointSize: 10., 
-		color: [ 0., 1., 0., 1. ], 
-		colors: [
-			0., 1., 1., 1.,
-			1., 0., 0., 1.
-		]
-	})
-
-	var point = new Point({ 
-		gl: gl,
-		shaders: {
-			"shaderA": shaderA,
-			"pointShader": pointShader,
-			"singleColorShader": singleColorShader,
-			"perVertexColorShader": perVertexColorShader
-		},
-		point: [.8, .8],
-		pointSize: 10.,
-		color: [1., 0., 1., 1.] 
-	})
-
-	triangle.setDrawingMode("per-vertex-color")
-	triangle.translate(-0.5, 0, 0);
-	triangle.scale(0.25, 0.25);
-	triangle.setUpdate(function () {
-		triangle.rotate(1);
-	})
-
-	square.setDrawingMode("single-color")
-	square.translate(0.25, 0, 0);
-	square.scale(1.25, 1.25);
-	square.setUpdate(function () {
-		square.rotate(-1);
-	})
-
-	trapezoid.translate(0.3, 0.2, 0)
-	trapezoid.scale(0.5, 0.5)
-	trapezoid.setUpdate(function () {
-		trapezoid.rotate(1);
-	})
-
-	circle.scale(0.2, 0.2)
-	circle.translate(-1, -0.5, 0)
-	circle.setDrawingMode('per-vertex-color')
-
-	point.scale(3)
-
-	segment.setDrawingMode("line")
-	segment.translate(-0.05, -0.5, 0)
-	segment.scale(2, 2)
-	segment.setUpdate(function () {
-		segment.rotate(1);
-	})
+	// var triangle = new Triangle({
+	// 	gl: gl,
+	// 	shaders: { 
+	// 		"shaderA": shaderA, 
+	// 		"pointShader": pointShader, 
+	// 		"singleColorShader": singleColorShader, 
+	// 		"perVertexColorShader": perVertexColorShader 
+	// 	},
+	// 	points: [
+	// 		0., 0.5,
+	// 		-0.5, -0.5,
+	// 		0.5, -0.5
+	// 	],
+	// 	pointSize: 10.,
+	// 	color: [1., 0., 1., 1.],
+	// 	colors: [
+	// 		1., 0., 0., 1.,
+	// 		0., 1., 0., 1.,
+	// 		0., 0., 1., 1.
+	// 	]
+	// })
 	
-	components.push(square)
-	components.push(trapezoid)
-	components.push(triangle)
-	components.push(point)
-	components.push(segment)
-	components.push(circle)
+	// var square = new Square({
+	// 	gl: gl,
+	// 	shaders: {
+	// 		"shaderA": shaderA,
+	// 		"pointShader": pointShader,
+	// 		"singleColorShader": singleColorShader,
+	// 		"perVertexColorShader": perVertexColorShader
+	// 	},
+	// 	start: [-0.5, 0.5],
+	// 	width: 1.,
+	// 	height: 1.,
+	// 	pointSize: 10.,
+	// 	color: [1., 1., 0., 1.],
+	// 	colors: [
+	// 		1, 0, 0, 1,
+	// 		1, 1, 0, 1,
+	// 		1, 1, 1, 0,
+	// 		0, 1, 1, 1
+	// 	]
+	// })
+
+	// var trapezoid = new Trapezoid({
+	// 	gl: gl,
+	// 	shaders: {
+	// 		"shaderA": shaderA,
+	// 		"pointShader": pointShader,
+	// 		"singleColorShader": singleColorShader,
+	// 		"perVertexColorShader": perVertexColorShader
+	// 	},
+	// 	pointSize: 10.,
+	// 	color: [1., 0.5, 0., 1.],
+	// 	colors: [
+	// 		1, 0, 0, 1,
+	// 		1, 1, 0, 1,
+	// 		1, 1, 1, 0,
+	// 		0, 1, 1, 1
+	// 	]
+	// })
+
+	// var circle = new Circle({
+	// 	gl: gl,
+	// 	shaders: {
+	// 		"shaderA": shaderA,
+	// 		"pointShader": pointShader,
+	// 		"singleColorShader": singleColorShader,
+	// 		"perVertexColorShader": perVertexColorShader
+	// 	},
+	// 	radius: 0.5,
+	// 	pointSize: 10.,
+	// 	color: [0.7, .9, 1., 1.],
+	// 	colors: [
+	// 		1., 0., 0., 1.,
+	// 		0., 1., 0., 1.
+	// 	]
+	// })
+
+	// var segment = new Segment({ 
+	// 	gl, 
+	// 	shaders: {
+	// 		"shaderA": shaderA,
+	// 		"pointShader": pointShader,
+	// 		"singleColorShader": singleColorShader,
+	// 		"perVertexColorShader": perVertexColorShader
+	// 	},
+	// 	points: [
+	// 		0.5, 0.7,
+	// 		0.7, 0.7
+	// 	], 
+	// 	pointSize: 10., 
+	// 	color: [ 0., 1., 0., 1. ], 
+	// 	colors: [
+	// 		0., 1., 1., 1.,
+	// 		1., 0., 0., 1.
+	// 	]
+	// })
+
+	// var point = new Point({ 
+	// 	gl: gl,
+	// 	shaders: {
+	// 		"shaderA": shaderA,
+	// 		"pointShader": pointShader,
+	// 		"singleColorShader": singleColorShader,
+	// 		"perVertexColorShader": perVertexColorShader
+	// 	},
+	// 	point: [.8, .8],
+	// 	pointSize: 10.,
+	// 	color: [1., 0., 1., 1.] 
+	// })
+
+	// triangle.setDrawingMode("per-vertex-color")
+	// triangle.translate(-0.5, 0, 0);
+	// triangle.scale(0.25, 0.25);
+	// triangle.setUpdate(function () {
+	// 	triangle.rotate(1);
+	// })
+
+	// square.setDrawingMode("single-color")
+	// square.translate(0.25, 0, 0);
+	// square.scale(1.25, 1.25);
+	// square.setUpdate(function () {
+	// 	square.rotate(-1);
+	// })
+
+	// trapezoid.translate(0.3, 0.2, 0)
+	// trapezoid.scale(0.5, 0.5)
+	// trapezoid.setUpdate(function () {
+	// 	trapezoid.rotate(1);
+	// })
+
+	// circle.scale(0.2, 0.2)
+	// circle.translate(-1, -0.5, 0)
+	// circle.setDrawingMode('per-vertex-color')
+
+	// point.scale(3)
+
+	// segment.setDrawingMode("line")
+	// segment.translate(-0.05, -0.5, 0)
+	// segment.scale(2, 2)
+	// segment.setUpdate(function () {
+	// 	segment.rotate(1);
+	// })
+	
+	// components.push(square)
+	// components.push(trapezoid)
+	// components.push(triangle)
+	// components.push(point)
+	// components.push(segment)
+	// components.push(circle)
 
 	return components
 }
 
-function main() {
-	var mainApp = new GlApp({ canvas: "canvas", clearColor: [0., 0., 0., 1.], animate: true })
-	if (!mainApp.gl) return
+var mainApp
+var gl
 
+function main() {
+	mainApp = new GlApp({ canvas: "canvas", clearColor: [0., 0., 0., 1.], animate: true })
+	if (!mainApp.gl) return
+	gl = mainApp.gl
 	var components = createComponents(mainApp.gl)
 	// Adding a component can be done in one of the following ways:
 	

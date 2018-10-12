@@ -30,6 +30,10 @@ class GlApp {
     this.components = this.components.concat(components)
   }
 
+  removeComponent (index) {
+    this.components.splice(index, 1)
+  }
+
   run () {
     var self = this;
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
