@@ -1,0 +1,86 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>threejs</title>
+</head>
+<body>
+    <script src="./threejs_files/three.min.js"></script>
+    <canvas id="myCanvas" width="1440" height="798" style="width: 1440px; height: 798px;"></canvas>
+    <script>
+        //RENDERER
+        var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas')});
+        renderer.setClearColor("black");
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        //CAMERA
+        var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // LIGHTS
+        var light = new THREE.AmbientLight("white", 0.5);
+        var light1 = new THREE.PointLight("white", 0.5);
+        // MATERIAL
+        var material = new THREE.MeshBasicMaterial({
+            color: "red",
+            opacity: 0.5,
+            wireframe: true
+        });
+        // var material2 = new THREE.MeshNormalMaterial();
+        // var material2 = new THREE.MeshPhongMaterial({
+        //     color: "blue",
+        //     specular: "white",
+        //     shinyness: 1
+        // });
+        var material2 = new THREE.MeshLambertMaterial({
+            color: "blue",
+            emissive: "red",
+            emissiveIntensity: 0.5
+        });
+        // var material2 = new THREE.MeshStandardMaterial({
+        //     color: "lightgray",
+        //     specular: "white",
+        //     metalness: 0.5
+        // });
+        
+        // TEXTURE
+        var textureMaterial = new THREE.MeshLambertMaterial({
+            map: new THREE.TextureLoader().load("img/crate.png"),
+            color: "green"
+        });
+
+        // POINTS
+        var pointsMaterial = new THREE.PointsMaterial({
+            color: "red",
+            size: 0.1
+        });
+
+        //SCENE
+        var scene = new THREE.Scene();
+        scene.add(light);
+        scene.add(light1);
+
+        //GEOMETRY
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        // var mesh = new THREE.Mesh(geometry, textureMaterial);
+        var mesh = new THREE.Points(geometry, pointsMaterial);
+        mesh.position.set(-1, 0, -10);
+        scene.add(mesh);
+        
+        var geometry2 = new THREE.BoxGeometry(1, 5, 1);
+        var mesh2 = new THREE.Mesh(geometry2, textureMaterial);
+        mesh2.position.set(1, 0, -10);
+        scene.add(mesh2);
+
+        //RENDER LOOP
+        requestAnimationFrame(render);
+
+        function render() {
+            mesh.rotation.x = mesh.rotation.x + 0.01;
+            mesh.rotation.y = mesh.rotation.x + 0.01;
+            mesh2.rotation.x = mesh2.rotation.x + 0.01;
+            mesh2.rotation.y = mesh2.rotation.x + 0.01;
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+    </script>
+</body>
+</html>
